@@ -2,8 +2,11 @@ package hei.school.sarisary.endpoint.rest.controller;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.time.Duration;
+import javax.imageio.ImageIO;
+import java.awt.Color;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,9 +38,22 @@ public class SaryController {
             File fileToUpload = convertToTempFile(imageData);
 
             bucketComponent.upload(fileToUpload, SARI_KEY + id + ".png");
+
+            BufferedImage originalImage = ImageIO.read(fileToUpload);
             
             // Convert image to black anf white
-            File fileTransformed = fileToUpload;
+            BufferedImage blackAndWhiteImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+            for (int x = 0; x < originalImage.getWidth(); x++) {
+                for (int y = 0; y < originalImage.getHeight(); y++) {
+                    Color color = new Color(originalImage.getRGB(x, y));
+                    int grayscale = (int) (0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue());
+                    Color newColor = new Color(grayscale, grayscale, grayscale);
+                    blackAndWhiteImage.setRGB(x, y, newColor.getRGB());
+                }
+            }
+
+            File fileTransformed = new File(id);
+            ImageIO.write(blackAndWhiteImage, "png", fileTransformed);
             bucketComponent.upload(fileTransformed, SARI_KEY + "B&N/" + id + ".png");
             
             return ResponseEntity.ok().body(null);
