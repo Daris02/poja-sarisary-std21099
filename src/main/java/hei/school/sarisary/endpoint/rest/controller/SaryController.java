@@ -36,16 +36,12 @@ public class SaryController {
         @RequestBody byte[] imageData
     ) {
         try {
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
             File fileToUpload = convertToTempFile(imageData);
-            bucketComponent.upload(fileToUpload, id);
 
-            BufferedImage bwImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-            bwImage.getGraphics().drawImage(image, 0, 0, null);
+            bucketComponent.upload(fileToUpload, SARI_KEY + id + ".png");
             
-            File output = new File(SARI_KEY + id + ".png");
-            ImageIO.write(bwImage, "png", output);
-            bucketComponent.upload(output, id);
+            File fileTransformed = fileToUpload;
+            bucketComponent.upload(fileTransformed, SARI_KEY + "B&N/" + id + ".png");
             
             return ResponseEntity.ok().body(null);
         } catch (IOException e) {
@@ -54,11 +50,13 @@ public class SaryController {
     }
 
     @GetMapping(value = "/black-and-white/{id}")
-    public String getOriginalAndTransformImageUrl(
+    public ListUrl getOriginalAndTransformImageUrl(
         @PathVariable String id
     ) {
-        ;
-        return bucketComponent.presign(id, Duration.ofMinutes(4)).toString();
+        ListUrl listUrl = new ListUrl(
+            bucketComponent.presign(SARI_KEY + id, Duration.ofMinutes(4)).toString(),
+            bucketComponent.presign(SARI_KEY + "B&N/" + id, Duration.ofMinutes(4)).toString());
+        return listUrl;
     }
 
     private File convertToTempFile(byte[] imageData) throws IOException {
