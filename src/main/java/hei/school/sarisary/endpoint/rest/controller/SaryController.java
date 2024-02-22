@@ -17,10 +17,6 @@ import hei.school.sarisary.PojaGenerated;
 import hei.school.sarisary.file.BucketComponent;
 import lombok.AllArgsConstructor;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-
 @PojaGenerated
 @RestController
 @AllArgsConstructor
@@ -40,6 +36,7 @@ public class SaryController {
 
             bucketComponent.upload(fileToUpload, SARI_KEY + id + ".png");
             
+            // Convert image to black anf white
             File fileTransformed = fileToUpload;
             bucketComponent.upload(fileTransformed, SARI_KEY + "B&N/" + id + ".png");
             
@@ -54,8 +51,8 @@ public class SaryController {
         @PathVariable String id
     ) {
         ListUrl listUrl = new ListUrl(
-            bucketComponent.presign(SARI_KEY + id, Duration.ofMinutes(4)).toString(),
-            bucketComponent.presign(SARI_KEY + "B&N/" + id, Duration.ofMinutes(4)).toString());
+            bucketComponent.presign(SARI_KEY + id + ".png", Duration.ofMinutes(4)).toString(),
+            bucketComponent.presign(SARI_KEY + "B&N/" + id + ".png", Duration.ofMinutes(4)).toString());
         return listUrl;
     }
 
